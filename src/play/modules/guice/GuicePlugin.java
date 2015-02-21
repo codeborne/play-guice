@@ -1,26 +1,19 @@
 package play.modules.guice;
 
+import com.google.inject.*;
+import com.google.inject.name.Named;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import play.Play;
+import play.PlayPlugin;
+import play.inject.BeanSource;
+
+import javax.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.inject.Inject;
-
-import play.Logger;
-import play.Play;
-import play.PlayPlugin;
-import play.inject.BeanSource;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.BindingAnnotation;
-import com.google.inject.ConfigurationException;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.Module;
-import com.google.inject.name.Named;
 
 /**
  * Enable <a href="http://google-guice.googlecode.com">Guice</a> integration in
@@ -35,13 +28,14 @@ import com.google.inject.name.Named;
  * @author <a href="mailto:a.a.vasiljev@gmail.com">Alexander Vasiljev</a>
  */
 public class GuicePlugin extends PlayPlugin implements BeanSource {
-
+  private static final Logger logger = LoggerFactory.getLogger(GuicePlugin.class);
+  
   private Injector injector;
   private final List<Module> modules = new ArrayList<Module>();
 
   @Override
   public void onApplicationStart() {
-    Logger.debug("Starting Guice modules scanning");
+    logger.debug("Starting Guice modules scanning");
     loadInjector();
     play.inject.Injector.inject(this);
     injectAnnotated();
@@ -50,18 +44,19 @@ public class GuicePlugin extends PlayPlugin implements BeanSource {
   private void loadInjector() {
     try {
       modules.clear();
-      Logger.debug("Guice modules cleared");
-      for (final Class clazz : Play.classloader.getAllClasses()) {
-        if (clazz.getSuperclass() == null) {
-          continue;
+      logger.debug("Guice modules cleared");
+      List<Class> customInjectors = Play.classloader.getAssignableClasses(GuiceSupport.class);
+      if (!customInjectors.isEmpty()) {
+        if (customInjectors.size() > 1) {
+          logger.warn("Found multiple customer injectors: {}, using first of them", customInjectors);
         }
-        if (isCustomInjector(clazz)) {
-          loadCustomInjector(clazz);
-          return;
-        }
-        if (isGuiceModule(clazz)) {
-          modules.add((Module) clazz.newInstance());
-        }
+        loadCustomInjector(customInjectors.get(0));
+        return;
+      }
+
+      List<Class> modulesClasses = Play.classloader.getAssignableClasses(AbstractModule.class);
+      for (Class moduleClass : modulesClasses) {
+        modules.add((Module) moduleClass.newInstance());
       }
       loadInjectorFromModules();
     }
@@ -70,18 +65,10 @@ public class GuicePlugin extends PlayPlugin implements BeanSource {
     }
   }
 
-  private boolean isCustomInjector(Class clazz) {
-    return GuiceSupport.class.isAssignableFrom(clazz);
-  }
-
-  private boolean isGuiceModule(Class clazz) {
-    return AbstractModule.class.isAssignableFrom(clazz);
-  }
-
   private void loadCustomInjector(Class clazz) throws InstantiationException, IllegalAccessException {
     final GuiceSupport gs = (GuiceSupport) clazz.newInstance();
     injector = gs.configure();
-    Logger.info("Guice injector created: " + clazz.getName());
+    logger.info("Guice injector created: {}", clazz.getName());
   }
 
   private void loadInjectorFromModules() {
@@ -89,7 +76,7 @@ public class GuicePlugin extends PlayPlugin implements BeanSource {
       throw new IllegalStateException("Could not find any custom guice injector or abstract modules. Are you sure you have at least one on the classpath?");
     }
     injector = Guice.createInjector(modules);
-    Logger.info("Guice injector created with modules: " + moduleList());
+    logger.info("Guice injector created with modules: " + moduleList());
   }
 
   private String moduleList() {
@@ -101,6 +88,7 @@ public class GuicePlugin extends PlayPlugin implements BeanSource {
     return moduleList.toString();
   }
 
+  @Override 
   public <T> T getBeanOfType(Class<T> clazz) {
     if (injector == null) {
       return null;
@@ -109,7 +97,7 @@ public class GuicePlugin extends PlayPlugin implements BeanSource {
       return injector.getInstance(clazz);
     }
     catch (ConfigurationException e) {
-      Logger.error(e.getMessage());
+      logger.error("Failed to get bean of type " + clazz, e);
       return null;
     }
   }
