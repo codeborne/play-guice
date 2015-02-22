@@ -8,7 +8,6 @@ import play.Play;
 import play.PlayPlugin;
 import play.inject.BeanSource;
 
-import javax.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -125,7 +124,8 @@ public class GuicePlugin extends PlayPlugin implements BeanSource {
   }
 
   private boolean isInjectable(Field field) {
-    return Modifier.isStatic(field.getModifiers()) && field.isAnnotationPresent(Inject.class);
+    return Modifier.isStatic(field.getModifiers()) && 
+        (field.isAnnotationPresent(javax.inject.Inject.class) || field.isAnnotationPresent(com.google.inject.Inject.class));
   }
 
   private void inject(Field field) throws IllegalAccessException {
