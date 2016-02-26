@@ -1,0 +1,16 @@
+## Changelog
+
+### 1.4
+
+ * upgrade to guice 4.0
+
+### 1.3
+
+ * support both javax.inject.Inject and com.google.inject.Inject annotations
+ * first search for custom injectors, and only then - for Modules.  (the previous code depended on order of classes: which of them meets first in classpath)
+
+### 1.2
+
+ * copy of play-guice 1.2 plugin
+ (taken from https://www.playframework.com/modules/guice)
+ Initial github project seems to be dead: http://github.com/pk11/play-guice-module
