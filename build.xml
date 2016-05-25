@@ -14,7 +14,7 @@
     </fileset>
   </path>
 
-  <target name="build" depends="compile">
+  <target name="build" depends="compile, test">
 
     <copy todir="tmp/classes">
       <fileset dir="src">
@@ -36,8 +36,43 @@
 
   <target name="compile">
     <mkdir dir="tmp/classes"/>
-    <javac srcdir="src" destdir="tmp/classes" source="1.7" target="1.7" debug="true">
+    <javac srcdir="src" destdir="tmp/classes" source="1.8" target="1.8" debug="true">
       <classpath refid="project.classpath"/>
     </javac>
   </target>
+
+  <target name="compile-tests" depends="compile">
+    <mkdir dir="tmp/test-classes"/>
+    <javac destdir="tmp/test-classes" target="1.8" source="1.8" debug="true">
+      <src path="test"/>
+      <classpath>
+        <path path="tmp/classes"/>
+        <path refid="project.classpath"/>
+        <fileset dir="${play.path}/framework/lib-test">
+          <include name="*.jar"/>
+        </fileset>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="test" depends="compile-tests">
+    <mkdir dir="tmp/test-results"/>
+    <junit maxmemory="128m" haltonfailure="false" failureproperty="tests-failed" fork="true">
+      <batchtest todir="tmp/test-results">
+        <fileset dir="tmp/test-classes" includes="**/*Test.class" excludes="**/Abstract*"/>
+        <formatter type="xml"/>
+        <formatter type="plain" usefile="false"/>
+      </batchtest>
+      <classpath>
+        <path path="tmp/classes"/>
+        <path path="tmp/test-classes"/>
+        <path refid="project.classpath"/>
+        <fileset dir="${play.path}/framework/lib-test">
+          <include name="*.jar"/>
+        </fileset>
+      </classpath>
+    </junit>
+    <fail if="tests-failed"/>
+  </target>
+
 </project>
