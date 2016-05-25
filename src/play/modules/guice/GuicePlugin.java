@@ -7,9 +7,11 @@ import org.slf4j.LoggerFactory;
 import play.Play;
 import play.PlayPlugin;
 import play.inject.BeanSource;
+import play.mvc.Http;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +31,7 @@ import java.util.List;
 public class GuicePlugin extends PlayPlugin implements BeanSource {
   private static final Logger logger = LoggerFactory.getLogger(GuicePlugin.class);
   
-  private Injector injector;
+  Injector injector;
   private final List<Module> modules = new ArrayList<Module>();
 
   @Override
@@ -38,6 +40,13 @@ public class GuicePlugin extends PlayPlugin implements BeanSource {
     loadInjector();
     play.inject.Injector.inject(this);
     injectAnnotated();
+  }
+
+  @Override public void beforeActionInvocation(Method actionMethod) {
+    if (Modifier.isStatic(actionMethod.getModifiers())) return;
+
+    Http.Request request = Http.Request.current();
+    if (request.controllerInstance == null) request.controllerInstance = getBeanOfType(request.controllerClass);
   }
 
   private void loadInjector() {

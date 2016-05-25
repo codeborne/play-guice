@@ -1,5 +1,9 @@
 ## Changelog
 
+### 1.5
+
+  * support injecting of non-static dependencies into controllers
+
 ### 1.4
 
  * upgrade to guice 4.0
