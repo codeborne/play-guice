@@ -1,8 +1,10 @@
-self: play-guice -> guice 1.5
+self: play-guice -> guice 1.6
 
 require:
     - play ]1.2,)
-    - com.google.inject -> guice 4.0:
+    - com.google.inject -> guice 4.1.0:
+        transitive: false
+    - com.google.inject.extensions -> guice-multibindings 4.1.0:
         transitive: false
     - aopalliance 1.0:
         transitive: false
