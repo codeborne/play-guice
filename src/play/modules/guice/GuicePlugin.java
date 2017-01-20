@@ -43,8 +43,6 @@ public class GuicePlugin extends PlayPlugin implements BeanSource {
   }
 
   @Override public void beforeActionInvocation(Method actionMethod) {
-    if (Modifier.isStatic(actionMethod.getModifiers())) return;
-
     Http.Request request = Http.Request.current();
     if (request.controllerInstance == null) request.controllerInstance = getBeanOfType(request.controllerClass);
   }

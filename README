@@ -1,5 +1,13 @@
 ## Changelog
 
+### 1.7
+
+  * create request.controllerInstance even if action method is static
+
+### 1.6
+
+  * upgrade guice to 4.1.0 and include multibindings
+
 ### 1.5
 
   * support injecting of non-static dependencies into controllers
