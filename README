@@ -1,5 +1,9 @@
 ## Changelog
 
+### 1.8
+
+  * upgrade to play 1.5
+
 ### 1.7
 
   * create request.controllerInstance even if action method is static
