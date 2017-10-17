@@ -1,4 +1,4 @@
-self: play-guice -> guice 1.8
+self: play-guice -> guice 1.9
 
 require:
     - play 1.5.+
@@ -8,3 +8,4 @@ require:
         transitive: false
     - aopalliance 1.0:
         transitive: false
+    - com.google.guava -> guava 23.0

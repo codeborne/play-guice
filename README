@@ -1,5 +1,10 @@
 ## Changelog
 
+### 1.9
+
+  * Added guava 23.0 dependency (Guice actually doesn't work without it)
+  * upgrade to play 1.5.1 (which adds methods Injector.setBeanSource() and automatically injects controllers' instances)
+
 ### 1.8
 
   * upgrade to play 1.5
