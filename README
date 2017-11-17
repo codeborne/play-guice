@@ -1,5 +1,11 @@
 ## Changelog
 
+### 1.10
+
+Move creation of guice injector from `onConfigurationRead()` to `onApplicationStart()`.
+We found that method `onConfigurationRead()` can be called many times during application lifetime (on every application.conf change).
+It causes creating multiple instances of guice injector, thus causing memory leaks.
+
 ### 1.9
 
   * Added guava 23.0 dependency (Guice actually doesn't work without it)
